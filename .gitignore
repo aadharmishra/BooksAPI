@@ -1,0 +1,7 @@
+﻿.vs/
+BooksAPI.sln
+BooksAPI/BooksAPI.csproj.user
+BooksAPI/Properties/
+BooksAPI/bin/
+BooksAPI/obj/
+appsettings*.json
