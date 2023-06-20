@@ -68,5 +68,19 @@ namespace BooksAPI
             _bookRepository.DeleteBook(id);
             return NoContent();
         }
+
+        [HttpGet("author/{author}")]
+        public IActionResult GetBooksByAuthor(string author)
+        {
+            var books = _bookRepository.GetBooksByAuthor(author);
+            return Ok(books);
+        }
+
+        [HttpGet("title/{title}")]
+        public IActionResult GetBooksByTitle(string title)
+        {
+            var books = _bookRepository.GetBooksByTitle(title);
+            return Ok(books);
+        }
     }
 }
