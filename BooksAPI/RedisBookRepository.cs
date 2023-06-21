@@ -29,8 +29,15 @@ namespace BooksAPI
 
         public Book GetBookById(int id)
         {
-            var bookJson = _database.StringGet(GetRedisKey(id));
-            return JsonConvert.DeserializeObject<Book>(bookJson);
+            var key = GetRedisKey(id);
+            var bookJson = _database.StringGet(key);
+            var ttl = _database.KeyTimeToLive(key);
+
+            if (!bookJson.IsNull)
+            {
+                return JsonConvert.DeserializeObject<Book>(bookJson);
+            }
+            return null;
         }
 
         public void AddBook(Book book)
@@ -39,9 +46,14 @@ namespace BooksAPI
             _database.StringSet(GetRedisKey(book.Id), bookJson);
         }
 
-        public void UpdateBook(Book book)
+        public void AddBookWithTTL(Book book, TimeSpan ttl)
         {
-            var existingBook = GetBookById(book.Id);
+            var bookJson = JsonConvert.SerializeObject(book);
+            _database.StringSet(GetRedisKey(book.Id), bookJson, ttl);
+        }
+
+        public void UpdateBook(Book book, Book existingBook)
+        {
             if (existingBook != null)
             {
                 existingBook.Title = book.Title;

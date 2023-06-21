@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace BooksAPI
 {
@@ -18,6 +19,9 @@ namespace BooksAPI
         public IActionResult GetAllBooks()
         {
             var books = _bookRepository.GetAllBooks();
+            if (books == null)
+                return NotFound();
+
             return Ok(books);
         }
 
@@ -32,13 +36,22 @@ namespace BooksAPI
         }
 
         [HttpPost]
-        public IActionResult AddBook([FromBody] Book book)
+        public IActionResult AddBook([FromBody] Book book, [FromQuery] int ttlSeconds = 0)
         {
             if (book == null)
                 return BadRequest();
 
-            _bookRepository.AddBook(book);
-            return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
+            if(ttlSeconds==0)
+            {
+                _bookRepository.AddBook(book);
+                return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
+            }
+            else
+            {
+                TimeSpan ttl = TimeSpan.FromSeconds(ttlSeconds);
+                _bookRepository.AddBookWithTTL(book, ttl);
+                return CreatedAtAction(nameof(GetBookById), new { id = book.Id }, book);
+            }           
         }
 
         [HttpPut("{id}")]
@@ -51,9 +64,7 @@ namespace BooksAPI
             if (existingBook == null)
                 return NotFound();
 
-            existingBook.Title = book.Title;
-            existingBook.Author = book.Author;
-            _bookRepository.UpdateBook(existingBook);
+            _bookRepository.UpdateBook(book, existingBook);
 
             return NoContent();
         }
